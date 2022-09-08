@@ -83,10 +83,27 @@ app.get('/interviewers/:id', (req, res) => {
 
 app.post('/applicant', (req, res) => {
     // Create a new applicant
-    const applicant = req.body;
-    
-    const result = createNewApplicant.run(applicant);
-    res.send(result);
+    const name = req.body.name
+    const email = req.body.email
+
+    const errors: string[] = []
+
+    if(typeof name !== 'string'){
+        errors.push("The name is not provided or is not a string");
+    }
+    if(typeof email !== 'string'){
+        errors.push("The email is not provided or is not a string");
+    }
+
+    if(errors.length === 0){
+        const info = createNewApplicant.run(name, email);
+        const applicant = getApplicantById.get(info.lastInsertRowid);
+        applicant.interviews = getInterviewsForApplicant.all(applicant.id);
+        applicant.interviewers = getInterviewersForApplicant.all(applicant.id);
+        res.send(applicant);
+    } else{
+        res.status(400).send({  error: errors   });
+    }
 })
 
 app.listen(port, () => {

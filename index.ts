@@ -17,12 +17,28 @@ const getInterviewersForApplicant = db.prepare(`
     WHERE interviews.applicantId = @applicantId;
 `)
 
+const getApplicantsForInterviewer = db.prepare(`
+    SELECT applicants.* FROM applicants
+    JOIN interviews ON applicants.id = interviews.applicantId
+    WHERE interviews.interviewerId = @interviewerId;
+`)
+
 const getInterviewsForApplicant = db.prepare(`
     SELECT * FROM interviews WHERE applicant_id = @applicant_id;
 `)
 
+const getInterviewsForInterviewer = db.prepare(`
+    SELECT * FROM interviews WHERE interviewer_id = @interviewer_id;
+`)
+
+
+
 const getSelectedApplicant = db.prepare(`
     SELECT * FROM applicants WHERE id = @id;
+`)
+
+const getSelectedInterviewer = db.prepare(`
+    SELECT * FROM interviewers WHERE id = @id;
 `)
 
 
@@ -41,11 +57,22 @@ app.get('/applicants/:id', (req, res) => {
     } else{
         res.status(404).send("Applicant not found");
     }
-
-
 })
 
-app.get('/applicants', (req, res) => {})
+app.get('/interivewers/:id', (req, res) => {
+    //  - Get details of an interviewer, including a list of every interview they've conducted and who the applicant was
+
+    const id = req.params.id;
+    const interviewer = getSelectedInterviewer.get(id);
+
+    if(interviewer){
+        interviewer.interviews = getInterviewsForInterviewer.all(id);
+        interviewer.applicants = getApplicantsForInterviewer.all(id);
+        res.send(interviewer);
+    } else{
+        res.status(404).send("Interviewer not found");
+    }
+})
 
 app.listen(port, () => {
     console.log(`Server listening on port ${port}`);

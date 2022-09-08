@@ -10,11 +10,11 @@ app.use(express.json());
 
 const port = 4000;
 
-const getSelectedApplicant = db.prepare(`
+const getApplicantById = db.prepare(`
     SELECT * FROM applicants WHERE id = @id;
 `)
 
-const getSelectedInterviewer = db.prepare(`
+const getInterviewerById = db.prepare(`
     SELECT * FROM interviewers WHERE id = @id;
 `)
 
@@ -39,12 +39,24 @@ const getInterviewsForInterviewer = db.prepare(`
     SELECT * FROM interviews WHERE interviewerId = @interviewerId;
 `)
 
+const createNewApplicant = db.prepare(`
+    INSERT INTO applicants (name, email) VALUES (@name, @email);
+`)
+
+const createNewInterviewer = db.prepare(`
+    INSERT INTO interviewers (name, email) VALUES (@name, @email);
+`)
+
+const createNewInterview = db.prepare(`
+
+`)
+
 
 app.get('/applicants/:id', (req, res) => {
     // Get details of an applicant, including a list of every interview they've had and who the interviewer was
 
     const id = req.params.id;
-    const applicant = getSelectedApplicant.get(id);
+    const applicant = getApplicantById.get(id);
 
     if(applicant){
         applicant.interviews = getInterviewsForApplicant.all(id);
@@ -58,7 +70,7 @@ app.get('/applicants/:id', (req, res) => {
 app.get('/interviewers/:id', (req, res) => {
     //  - Get details of an interviewer, including a list of every interview they've conducted and who the applicant was
 
-    const interviewer = getSelectedInterviewer.get(req.params);
+    const interviewer = getInterviewerById.get(req.params);
 
     if(interviewer){
         interviewer.interviews = getInterviewsForInterviewer.all({interviewerId: interviewer.id});
@@ -67,6 +79,14 @@ app.get('/interviewers/:id', (req, res) => {
     } else{
         res.status(404).send("Interviewer not found");
     }
+})
+
+app.post('/applicant', (req, res) => {
+    // Create a new applicant
+    const applicant = req.body;
+    
+    const result = createNewApplicant.run(applicant);
+    res.send(result);
 })
 
 app.listen(port, () => {

@@ -59,12 +59,11 @@ const createNewInterview = db.prepare(`
 app.get('/applicants/:id', (req, res) => {
     // Get details of an applicant, including a list of every interview they've had and who the interviewer was
 
-    const id = req.params.id;
-    const applicant = getApplicantById.get(id);
+    const applicant = getApplicantById.get(req.params);
 
     if(applicant){
-        applicant.interviews = getInterviewsForApplicant.all(id);
-        applicant.interviewers = getInterviewersForApplicant.all(id);
+        applicant.interviews = getInterviewsForApplicant.all({ applicantId: applicant.id });
+        applicant.interviewers = getInterviewersForApplicant.all({ applicantId: applicant.id });
         res.send(applicant);
     } else{
         res.status(404).send("Applicant not found");

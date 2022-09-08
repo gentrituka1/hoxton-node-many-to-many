@@ -39,6 +39,10 @@ const getInterviewsForInterviewer = db.prepare(`
     SELECT * FROM interviews WHERE interviewerId = @interviewerId;
 `)
 
+const getInterviewById = db.prepare(`
+    SELECT * FROM interviews WHERE id = @id;
+`)
+
 const createNewApplicant = db.prepare(`
     INSERT INTO applicants (name, email) VALUES (@name, @email);
 `)
@@ -48,7 +52,7 @@ const createNewInterviewer = db.prepare(`
 `)
 
 const createNewInterview = db.prepare(`
-
+    INSERT INTO interviews (applicantId, interviewerId, date, score) VALUES (@applicantId, @interviewerId, @date, @score);
 `)
 
 
@@ -101,6 +105,62 @@ app.post('/applicant', (req, res) => {
         applicant.interviews = getInterviewsForApplicant.all(applicant.id);
         applicant.interviewers = getInterviewersForApplicant.all(applicant.id);
         res.send(applicant);
+    } else{
+        res.status(400).send({  error: errors   });
+    }
+})
+
+app.post('/interviewer', (req, res) => {
+    // Create a new interviewer
+    const name = req.body.name
+    const email = req.body.email
+
+    const errors: string[] = []
+
+    if(typeof name !== 'string'){
+        errors.push("The name is not provided or is not a string");
+    }
+    if(typeof email !== 'string'){
+        errors.push("The email is not provided or is not a string");
+    }
+
+    if(errors.length === 0){
+        const info = createNewInterviewer.run(name, email);
+        const interviewer = getInterviewerById.get(info.lastInsertRowid);
+        interviewer.interviews = getInterviewsForInterviewer.all(interviewer.id);
+        interviewer.applicants = getApplicantsForInterviewer.all(interviewer.id);
+        res.send(interviewer);
+    } else{
+        res.status(400).send({  error: errors   });
+    }
+})
+
+app.post('/interview', (req, res) => {
+    // Create a new interview
+    const applicantId = req.body.applicantId
+    const interviewerId = req.body.interviewerId
+    const date = req.body.date
+    const score = req.body.score
+
+    const errors: string[] = []
+
+    if(typeof applicantId !== 'number'){
+        errors.push("The applicantId is not provided or is not a number");
+    }
+    if(typeof interviewerId !== 'number'){
+        errors.push("The interviewerId is not provided or is not a number");
+    }
+    if(typeof date !== 'string'){
+        errors.push("The date is not provided or is not a string");
+    }
+    if(typeof score !== 'number'){
+        errors.push("The score is not provided or is not a number");
+    }
+
+    if(errors.length === 0){
+        const info = createNewInterview.run(applicantId, interviewerId, date, score);
+        const interview = getInterviewById.get(info.lastInsertRowid);
+        res.send(interview);
     } else{
         res.status(400).send({  error: errors   });
     }

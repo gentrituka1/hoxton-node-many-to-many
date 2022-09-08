@@ -84,7 +84,7 @@ app.get('/interviewers/:id', (req, res) => {
     }
 })
 
-app.post('/applicant', (req, res) => {
+app.post('/applicants', (req, res) => {
     // Create a new applicant
     const name = req.body.name
     const email = req.body.email
@@ -109,7 +109,7 @@ app.post('/applicant', (req, res) => {
     }
 })
 
-app.post('/interviewer', (req, res) => {
+app.post('/interviewers', (req, res) => {
     // Create a new interviewer
     const name = req.body.name
     const email = req.body.email
@@ -134,7 +134,7 @@ app.post('/interviewer', (req, res) => {
     }
 })
 
-app.post('/interview', (req, res) => {
+app.post('/interviews', (req, res) => {
     // Create a new interview
     const applicantId = req.body.applicantId
     const interviewerId = req.body.interviewerId

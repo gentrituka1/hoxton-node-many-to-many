@@ -21,7 +21,7 @@ const getInterviewerById = db.prepare(`
 
 const getInterviewersForApplicant = db.prepare(`
     SELECT interviewers.* FROM interviewers
-    JOIN interviews ON interviewers.id = interviews.applicantId
+    JOIN interviews ON interviewers.id = interviews.interviewersId
     WHERE interviews.applicantId = @applicantId;
 `)
 
@@ -57,7 +57,7 @@ const createNewInterview = db.prepare(`
 
 
 app.get('/applicants/:id', (req, res) => {
-    // Get details of an applicant, including a list of every interview they've had and who the interviewer was
+    // - Get details of an applicant, including a list of every interview they've had and who the interviewer was
 
     const applicant = getApplicantById.get(req.params);
 
@@ -66,7 +66,7 @@ app.get('/applicants/:id', (req, res) => {
         applicant.interviewers = getInterviewersForApplicant.all({ applicantId: applicant.id });
         res.send(applicant);
     } else{
-        res.status(404).send("Applicant not found");
+        res.status(400).send("Applicant not found");
     }
 })
 
@@ -80,7 +80,21 @@ app.get('/interviewers/:id', (req, res) => {
         interviewer.applicants = getApplicantsForInterviewer.all({interviewerId: interviewer.id});
         res.send(interviewer);
     } else{
-        res.status(404).send("Interviewer not found");
+        res.status(400).send("Interviewer not found");
+    }
+})
+
+app.get('/interviews/:id', (req, res) => {
+    // - Get details of an interview, including the applicant and interviewer
+
+    const interview = getInterviewById.get(req.params);
+
+    if(interview){
+        interview.applicant = getApplicantById.get({applicantId: interview.applicantId});
+        interview.interviewer = getInterviewerById.get({interviewerId: interview.interviewerId});
+        res.send(interview);
+    } else{
+        res.status(400).send("Interview not found");
     }
 })
 

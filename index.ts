@@ -60,36 +60,6 @@ const createNewInterview = db.prepare(`
 `)
 
 
-app.get('/applicants/:id', (req, res) => {
-    // - Get details of an applicant, including a list of every interview they've had and who the interviewer was
-
-    const applicant = getApplicantById.get(req.params);
-
-    if(applicant){
-        applicant.interviews = getInterviewsForApplicant.all({ applicantId: applicant.id });
-        applicant.interviewers = getInterviewersForApplicant.all({ applicantId: applicant.id });
-        res.send(applicant);
-    } else{
-        res.status(400).send("Applicant not found");
-    }
-})
-
-app.get('/interviewers/:id', (req, res) => {
-    //  - Get details of an interviewer, including a list of every interview they've conducted and who the applicant was
-
-    const interviewer = getInterviewerById.get(req.params);
-
-    if(interviewer){
-        interviewer.interviews = getInterviewsForInterviewer.all({interviewerId: interviewer.id});
-        interviewer.applicants = getApplicantsForInterviewer.all({interviewerId: interviewer.id});
-        res.send(interviewer);
-    } else{
-        res.status(400).send("Interviewer not found");
-    }
-})
-
-
-
 app.post('/applicants', (req, res) => {
     // Create a new applicant
     const name = req.body.name
@@ -115,6 +85,20 @@ app.post('/applicants', (req, res) => {
     }
 })
 
+app.get('/applicants/:id', (req, res) => {
+    // - Get details of an applicant, including a list of every interview they've had and who the interviewer was
+
+    const applicant = getApplicantById.get(req.params);
+
+    if(applicant){
+        applicant.interviews = getInterviewsForApplicant.all({ applicantId: applicant.id });
+        applicant.interviewers = getInterviewersForApplicant.all({ applicantId: applicant.id });
+        res.send(applicant);
+    } else{
+        res.status(400).send("Applicant not found");
+    }
+})
+
 app.post('/interviewers', (req, res) => {
     // Create a new interviewer
     const name = req.body.name
@@ -137,6 +121,20 @@ app.post('/interviewers', (req, res) => {
         res.send(interviewer);
     } else{
         res.status(400).send({  error: errors   });
+    }
+})
+
+app.get('/interviewers/:id', (req, res) => {
+    //  - Get details of an interviewer, including a list of every interview they've conducted and who the applicant was
+
+    const interviewer = getInterviewerById.get(req.params);
+
+    if(interviewer){
+        interviewer.interviews = getInterviewsForInterviewer.all({interviewerId: interviewer.id});
+        interviewer.applicants = getApplicantsForInterviewer.all({interviewerId: interviewer.id});
+        res.send(interviewer);
+    } else{
+        res.status(400).send("Interviewer not found");
     }
 })
 
